@@ -2,16 +2,19 @@ import axios from "axios";
 import express from "express";
 import { Api } from "../types";
 
-const fetchAuthToken = async (): Promise<{
-  access_token: string;
-  expires_in: number;
-}> => {
-  return (
-    await axios.post(
+type TwitchApiAuthResponse = {
+  data: {
+    access_token: string;
+    expires_in: number;
+  };
+};
+
+const fetchAuthToken = async () =>
+  (
+    await axios.post<{}, TwitchApiAuthResponse>(
       `https://id.twitch.tv/oauth2/token?client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`
     )
   ).data;
-};
 
 /**
  * Basic closure over a newly fetched token to avoid repeating unnecessary auth calls.
@@ -29,7 +32,7 @@ const auth = (() => {
     setTimeout(() => (token = null), expires_in);
     return token;
   };
-  return async (): Promise<string> => (token ? token : await tokenPromise());
+  return async () => (token ? token : await tokenPromise());
 })();
 
 /**

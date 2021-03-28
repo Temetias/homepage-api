@@ -7,6 +7,7 @@ dotenv.config();
 
 import { Api } from "./types";
 import express from "express";
+import cors from "cors";
 
 // APIS //////////////////////////////////////////
 
@@ -18,6 +19,7 @@ import TWITCH_API from "./api/twitch";
 const APIS: Api[] = [TWITCH_API];
 
 const app = express();
+app.use(cors());
 
 // Bundles APIs to /[api]/[endpoint] -structure.
 APIS.forEach(({ name, endpoints }) =>
