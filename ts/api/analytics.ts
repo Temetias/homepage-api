@@ -46,16 +46,10 @@ const initialize: ApiInitializer = (app: express.Express) => {
   app.get(`/${MASKED_ANALYTICS_NAME}/ping`, (req, res) => {
     connectAndDo(async (collection) => {
       req.query.id && req.query.time
-        ? res
-            .status(200)
-            .send(
-              (
-                await collection.updateOne(
-                  { id: req.query.id },
-                  { visitTime: req.query.time }
-                )
-              ).upsertedId
-            )
+        ? collection
+            .updateOne({ id: req.query.id }, { visitTime: req.query.time })
+            .then(({ upsertedId }) => res.status(200).send(upsertedId))
+            .catch(() => res.status(500).send(":("))
         : res.status(400).send(">:(");
     });
   });
