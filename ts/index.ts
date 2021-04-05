@@ -5,35 +5,30 @@ dotenv.config();
 
 // DEPS //////////////////////////////////////////
 
-import { Api } from "./types";
 import express from "express";
 import cors from "cors";
+import { json } from "body-parser";
 
 // APIS //////////////////////////////////////////
 
-import TWITCH_API from "./api/twitch";
+import twitch from "./api/twitch";
+import analytics from "./api/analytics";
 
 // BOOTSTRAP /////////////////////////////////////
 
-// Add new APIs here
-const APIS: Api[] = [TWITCH_API];
-
 const app = express();
 app.use(cors());
+app.use(json());
 
-// Bundles APIs to /[api]/[endpoint] -structure.
-APIS.forEach(({ name, endpoints }) =>
-  endpoints.forEach(([path, callback]) => app.get(`/${name}${path}`, callback))
+const twitchStatus = twitch(app);
+const analyticsStatus = analytics(app);
+
+app.get("/", async (_, res) =>
+  res.send({
+    twitch: await twitchStatus(),
+    analytics: await analyticsStatus(),
+  })
 );
-
-// Bundles status page into a simple name+boolean record.
-app.get("/", async (_, res) => {
-  const apiStatuses: Record<string, boolean> = {};
-  for (const { name, statusCallback } of APIS) {
-    apiStatuses[name] = await statusCallback();
-  }
-  res.send(apiStatuses);
-});
 
 app.listen(process.env.PORT || 8080, () =>
   console.log(`Server running at https://localhost:${process.env.PORT}`)

@@ -1,6 +1,6 @@
 import axios from "axios";
 import express from "express";
-import { Api } from "../types";
+import { ApiInitializer } from "../types";
 
 type TwitchApiAuthResponse = {
   data: {
@@ -51,20 +51,18 @@ const liveStatus = async (authToken: string) => {
   return data.data[0];
 };
 
-export default {
-  name: "twitch",
-  statusCallback: async () => {
+const initialize: ApiInitializer = (app: express.Express) => {
+  app.get("/twitch/livestatus", async (_, res) => {
+    res.json(await liveStatus(await auth()));
+  });
+
+  return async () => {
     try {
       return !!(await liveStatus(await auth()));
     } catch (_) {
       return false;
     }
-  },
-  endpoints: [
-    [
-      "/livestatus",
-      async (_: express.Request, res: express.Response) =>
-        res.json(await liveStatus(await auth())),
-    ],
-  ],
-} as Api;
+  };
+};
+
+export default initialize;
