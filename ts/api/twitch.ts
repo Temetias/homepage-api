@@ -53,7 +53,7 @@ const liveStatus = async (authToken: string) => {
 
 const initialize: ApiInitializer = (app: express.Express) => {
   app.get("/twitch/livestatus", async (_, res) => {
-    res.json(await liveStatus(await auth()));
+    res.status(200).json(await liveStatus(await auth()));
   });
 
   return async () => {

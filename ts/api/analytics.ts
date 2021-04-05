@@ -1,5 +1,5 @@
 import express from "express";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { ApiInitializer } from "../types";
 
 const MASKED_ANALYTICS_NAME = "laskenta"; // Dodging adblockers with a finnish name
@@ -36,7 +36,12 @@ const initialize: ApiInitializer = (app: express.Express) => {
     `/${MASKED_ANALYTICS_NAME}/${MASKED_ANALYTICS_ENDPOINT}`,
     (req, res) => {
       connectAndDo((collection) =>
-        collection.insertOne({ ...req.body, visitTime: 0 })
+        collection.insertOne({
+          ...req.body,
+          ip: req.ip,
+          ips: req.ips,
+          visitTime: 0,
+        })
       )
         .then(({ insertedId }) => res.status(200).send(insertedId))
         .catch(() => res.status(500).send(":("));
@@ -47,7 +52,10 @@ const initialize: ApiInitializer = (app: express.Express) => {
     connectAndDo(async (collection) => {
       req.query.id && req.query.time
         ? collection
-            .updateOne({ id: req.query.id }, { visitTime: req.query.time })
+            .updateOne(
+              { _id: new ObjectId(req.query.id as string) },
+              { $set: { visitTime: req.query.time } }
+            )
             .then(({ upsertedId }) => res.status(200).send(upsertedId))
             .catch(() => res.status(500).send(":("))
         : res.status(400).send(">:(");
