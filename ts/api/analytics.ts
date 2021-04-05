@@ -49,10 +49,10 @@ const initialize: ApiInitializer = (app: express.Express) => {
         ? res
             .status(200)
             .send(
-              await (
+              (
                 await collection.updateOne(
                   { id: req.query.id },
-                  { time: req.query.time }
+                  { visitTime: req.query.time }
                 )
               ).upsertedId
             )
