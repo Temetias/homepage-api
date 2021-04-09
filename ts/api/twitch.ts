@@ -1,6 +1,7 @@
 import axios from "axios";
 import express from "express";
 import { ApiInitializer } from "../types";
+import { sendError } from "../utils";
 
 type TwitchApiAuthResponse = {
   data: {
@@ -53,7 +54,11 @@ const liveStatus = async (authToken: string) => {
 
 const initialize: ApiInitializer = (app: express.Express) => {
   app.get("/twitch/livestatus", async (_, res) => {
-    res.status(200).json(await liveStatus(await auth()));
+    try {
+      res.status(200).json(await liveStatus(await auth()));
+    } catch (e) {
+      sendError(502, res);
+    }
   });
 
   return async () => {

@@ -1,6 +1,7 @@
 import express from "express";
 import { MongoClient, ObjectId } from "mongodb";
 import { ApiInitializer } from "../types";
+import { sendError } from "../utils";
 
 const MASKED_ANALYTICS_NAME = "laskenta"; // Dodging adblockers with a finnish name
 const MASKED_ANALYTICS_ENDPOINT = "tapahtuma"; // Dodging adblockers with a finnish name
@@ -44,7 +45,7 @@ const initialize: ApiInitializer = (app: express.Express) => {
         })
       )
         .then(({ insertedId }) => res.status(200).send(insertedId))
-        .catch(() => res.status(500).send(":("));
+        .catch(() => sendError(500, res));
     }
   );
 
@@ -57,9 +58,8 @@ const initialize: ApiInitializer = (app: express.Express) => {
               { $set: { visitTime: req.query.time } }
             )
             .then(({ upsertedId }) => res.status(200).send(upsertedId))
-            .catch(() => res.status(500).send(":("))
-        : res.status(400).send(">:(");
-    });
+        : sendError(400, res);
+    }).catch(() => sendError(500, res));
   });
 
   return async () => {
