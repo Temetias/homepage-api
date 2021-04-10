@@ -7,7 +7,6 @@ dotenv.config();
 
 import path from "path";
 import express from "express";
-import cors from "cors";
 import { json } from "body-parser";
 import { sendError } from "./utils";
 
@@ -20,7 +19,6 @@ import analytics from "./api/analytics";
 
 const app = express();
 app.set("trust proxy", true);
-app.use(cors());
 app.use(json());
 
 app.use("/static", express.static(path.join(__dirname, "../images")));
