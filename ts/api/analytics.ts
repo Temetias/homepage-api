@@ -42,6 +42,7 @@ const initialize: ApiInitializer = (app: express.Express) => {
           ip: req.ip,
           ips: req.ips,
           visitTime: 0,
+          timestamp: Date.now(),
         })
       )
         .then(({ insertedId }) => res.status(200).send(insertedId))
