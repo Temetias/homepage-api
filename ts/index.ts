@@ -9,12 +9,12 @@ import path from "path";
 import express from "express";
 import cors from "cors";
 import { json } from "body-parser";
+import { sendError } from "./utils";
 
 // APIS //////////////////////////////////////////
 
 import twitch from "./api/twitch";
 import analytics from "./api/analytics";
-import { sendError } from "./utils";
 
 // BOOTSTRAP /////////////////////////////////////
 
@@ -28,12 +28,16 @@ app.use("/static", express.static(path.join(__dirname, "../images")));
 const twitchStatus = twitch(app);
 const analyticsStatus = analytics(app);
 
-app.get("/", async (_, res) =>
-  res.status(200).json({
-    twitch: await twitchStatus(),
-    analytics: await analyticsStatus(),
-  })
-);
+app.get("/", async (_, res) => {
+  try {
+    res.status(200).json({
+      twitch: await twitchStatus(),
+      analytics: await analyticsStatus(),
+    });
+  } catch (e) {
+    sendError(500, res);
+  }
+});
 
 app.get("*", (_, res) => sendError(404, res));
 

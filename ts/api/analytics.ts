@@ -21,7 +21,7 @@ const getClient = () => {
 const connectAndDo = async <T>(
   callback: (
     collection: ReturnType<ReturnType<MongoClient["db"]>["collection"]>
-  ) => Promise<T>
+  ) => Promise<T> | T
 ) => {
   const client = getClient();
   await client.connect();
@@ -50,7 +50,7 @@ const initialize: ApiInitializer = (app: express.Express) => {
   );
 
   app.get(`/${MASKED_ANALYTICS_NAME}/ping`, (req, res) => {
-    connectAndDo(async (collection) => {
+    connectAndDo((collection) => {
       req.query.id && req.query.time
         ? collection
             .updateOne(
@@ -62,9 +62,19 @@ const initialize: ApiInitializer = (app: express.Express) => {
     }).catch(() => sendError(500, res));
   });
 
+  app.get("/analytics/getEntries", (_, res) => {
+    connectAndDo((collection) => {
+      collection.find({}).toArray((err, result) => {
+        err
+          ? sendError(500, res)
+          : res.status(200).send(JSON.stringify(result));
+      });
+    });
+  });
+
   return async () => {
     try {
-      await connectAndDo(async () => {});
+      await connectAndDo(() => {});
       return true;
     } catch (_) {
       return false;
